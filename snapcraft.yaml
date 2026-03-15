@@ -70,7 +70,7 @@ parts:
     source: https://salsa.debian.org/debian/libyuv.git
     source-commit: 8f0761d7b98aa402548983b2f823e5c1e81d687b
     cmake-parameters:
-      - -DCMAKE_BUILD_TYPE="Release"
+      - -DCMAKE_BUILD_TYPE="Debug"
   
   ringracers-app:
     plugin: cmake
