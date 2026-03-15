@@ -4,7 +4,6 @@ version: '2.4'
 platforms:
   amd64:
   arm64:
-  armhf:
 summary: Racing at the Next Level
 description: |
   Hang up your sneakers, because Dr. Robotnik and his ex-enemies are going go-karting! Use the untapped potential of rings to super-charge your vehicle across more than 200 crazy courses. With over 20 unique items and some of the hottest moves on this side of the Floating Island, this is Racing at the Next Level!
@@ -84,6 +83,7 @@ parts:
       - libupnp-dev
       - libgme-dev
       - libopenmpt-dev
+      - libjpeg-dev
       - libc6-dev
       - libpng-dev
       - libcurl4-openssl-dev
