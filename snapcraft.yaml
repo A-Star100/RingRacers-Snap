@@ -32,7 +32,7 @@ apps:
     common-id: org.kartkrew.RingRacers
     environment:
       HOME: $SNAP_USER_COMMON
-      SRB2WADDIR: $SNAP/usr/games/RingRacers
+      RINGRACERSWADDIR: $SNAP/usr/games/RingRacers
       LD_LIBRARY_PATH: $SNAP/usr/lib:$SNAP/usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR:$LD_LIBRARY_PATH
     extensions: [gnome]
     plugs:
