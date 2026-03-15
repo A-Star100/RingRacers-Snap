@@ -65,11 +65,19 @@ parts:
       data: usr/games/RingRacers/data
     prime:
       - usr/games/RingRacers   
+
+  libyuv:
+    plugin: cmake
+    source: https://salsa.debian.org/debian/libyuv.git
+    source-commit: 8f0761d7b98aa402548983b2f823e5c1e81d687b
+    cmake-parameters:
+      - -DCMAKE_BUILD_TYPE="Release"
+  
   ringracers-app:
     plugin: cmake
     source: https://github.com/KartKrewDev/RingRacers.git
     source-tag: v2.4
-    after: [ringracersassets]
+    after: [libyuv, ringracersassets]
     build-packages:
       - libsdl2-mixer-dev
       - libsdl2-dev
@@ -82,7 +90,6 @@ parts:
       - nasm
       - zlib1g-dev
       - build-essential
-      - libyuv
     cmake-parameters:
       - -DCMAKE_BUILD_TYPE=RelWithDebInfo
       - -DSRB2_CONFIG_DEV_BUILD=OFF
