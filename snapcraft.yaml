@@ -86,7 +86,7 @@ parts:
     cmake-parameters:
       - -DCMAKE_BUILD_TYPE=RelWithDebInfo
       - -DCMAKE_C_FLAGS=-g1 -O3
-      - -DCMAKE_CXX_FLAGS=-g1 -O3 -fpermissive
+      - -DCMAKE_CXX_FLAGS=-g1 -O3
       - -DSRB2_CONFIG_DEV_BUILD=OFF
       - -DSRB2_SDL2_EXE_NAME=ringracers
     override-build: |
