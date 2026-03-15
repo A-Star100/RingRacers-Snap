@@ -1,26 +1,39 @@
-name: srb2kart
+name: ringracers
 base: core24
-version: '1.6'
+version: '2.4'
 platforms:
   amd64:
   arm64:
   armhf:
-summary: Kart racing mod based on the 3D Sonic fangame Sonic Robo Blast 2
+summary: Racing at the Next Level
 description: |
-  Sonic Robo Blast 2 Kart (usually shortened to SRB2Kart or SRB2K) is a kart racing game with Sonic-themed characters, items and race tracks. 
-  SRB2Kart features over 100 maps for two game modes: the main Race mode and a Battle mode where players fight each other using the items available in the game.
+  Hang up your sneakers, because Dr. Robotnik and his ex-enemies are going go-karting! Use the untapped potential of rings to super-charge your vehicle across more than 200 crazy courses. With over 20 unique items and some of the hottest moves on this side of the Floating Island, this is Racing at the Next Level!
+
+  Ring Racers is packed to the brim with features, building off the success of its predecessor RingRacers, including:
+  
+  - A ludicrously long list of courses and playable characters
+  - A complete Grand Prix mode with CPU opponents and multiple difficulty levels
+  - New and revamped items
+  - Unique game systems and mechanics
+  - Local split-screen multiplayer up to 4 players, and online play up to 16
+  - A comprehensive Time Attack mode with replay support
+  - A wealth of secrets to find
+  In the Snap version of Ring Racers, your game data is located in **`~/snap/ringracers/.common/.ringracers`**.
+  In order to load user modifications, please store them in this directory, or override your Snap configuration.
+  
+  Kart Krew Dev is not affiliated with SEGA Corporation. Dr. Robotnik's Ring Racers is a work of fan art.
 grade: stable
 confinement: strict
-icon: srb2kart.png
+icon: ringracers.png
 
 apps:
-  srb2kart:
-    command: usr/games/SRB2Kart/srb2kart
-    desktop: org.srb2.SRB2Kart.desktop
-    common-id: org.srb2.SRB2Kart
+  ringracers:
+    command: usr/games/RingRacers/ringracers
+    desktop: org.kartkrew.RingRacers.desktop
+    common-id: org.kartkrew.RingRacers
     environment:
       HOME: $SNAP_USER_COMMON
-      SRB2WADDIR: $SNAP/usr/games/SRB2Kart
+      SRB2WADDIR: $SNAP/usr/games/RingRacers
       LD_LIBRARY_PATH: $SNAP/usr/lib:$SNAP/usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR:$LD_LIBRARY_PATH
     extensions: [gnome]
     plugs:
@@ -40,101 +53,23 @@ plugs:
     private: true
 
 parts:
-  kartassets:
+  ringracersassets:
     plugin: dump
-    source: https://github.com/STJr/Kart-Public/releases/download/v1.6/AssetsLinuxOnly.zip
+    source: https://github.com/KartKrewDev/RingRacers/releases/download/v2.4/Dr.Robotnik.s-Ring-Racers-v2.4-Assets.zip
     organize:
-      mdls: usr/games/SRB2Kart/mdls
-      chars.kart: usr/games/SRB2Kart/chars.kart
-      mdls.dat: usr/games/SRB2Kart/mdls.dat
-      music.kart: usr/games/SRB2Kart/music.kart
-      srb2.srb: usr/games/SRB2Kart/srb2.srb
-      maps.kart: usr/games/SRB2Kart/maps.kart
-      bonuschars.kart: usr/games/SRB2Kart/bonuschars.kart
-      gfx.kart: usr/games/SRB2Kart/gfx.kart
-      textures.kart: usr/games/SRB2Kart/textures.kart
-      sounds.kart: usr/games/SRB2Kart/sounds.kart
+      models: usr/games/RingRacers/models
+      models.dat: usr/games/RingRacers/models.dat
+      bios.pk3: usr/games/RingRacers/bios.pk3
+      gamecontrollerdb.txt: usr/games/RingRacers/gamecontrollerdb.txt
+      PASSWORDS.txt: usr/games/RingRacers/PASSWORDS.txt
+      data: usr/games/RingRacers/data
     prime:
-      - usr/games/SRB2Kart
-
-  rapidjson:
+      - usr/games/RingRacers   
+  ringracers-app:
     plugin: cmake
-    source: https://github.com/Tencent/rapidjson/archive/24b5e7a8b27f42fa16b96fc70aade9106cf7102f.tar.gz
-    source-checksum: sha256/2d2601a82d2d3b7e143a3c8d43ef616671391034bc46891a9816b79cf2d3e7a8
-    cmake-generator: Ninja
-    cmake-parameters:
-      - -DRAPIDJSON_BUILD_DOC=OFF
-      - -DRAPIDJSON_BUILD_EXAMPLES=OFF
-      - -DRAPIDJSON_BUILD_TESTS=OFF
-      - -DRAPIDJSON_BUILD_THIRDPARTY_GTEST=OFF
-      - -DCMAKE_INSTALL_LIBDIR=lib
-    build-environment:
-      - CMAKE_POLICY_VERSION_MINIMUM: "3.5"
-    override-build: |
-      sed -i '1i cmake_policy(SET CMP0048 NEW)' ../src/CMakeLists.txt
-      sed -i '1i set(CMAKE_POLICY_VERSION_MINIMUM 3.5)' ../src/CMakeLists.txt
-    prime:
-      - -usr/include
-      - -usr/lib/cmake
-
-  discord-rpc:
-    plugin: cmake
-    source: https://github.com/discord/discord-rpc.git
-    source-tag: v3.4.0
-    cmake-generator: Ninja
-    cmake-parameters:
-      - -DBUILD_SHARED_LIBS=ON
-      - -DBUILD_EXAMPLES=OFF
-      - -DCMAKE_INSTALL_LIBDIR=lib
-      - -DCLANG_FORMAT_EXECUTABLE=/bin/true
-    build-environment:
-      - CFLAGS: "-O3 -Wno-error"
-      - CXXFLAGS: "-O3 -Wno-error"
-      - CMAKE_POLICY_VERSION_MINIMUM: "3.5"
-    # the below really should not be needed
-    # but discord-rpc is EOL and maintaining a fork
-    # would be sort of unreasonable when we can just use this
-    override-build: |
-      sed -i '1i cmake_policy(SET CMP0048 NEW)' ../src/CMakeLists.txt
-      sed -i '1i set(CMAKE_POLICY_VERSION_MINIMUM 3.5)' ../src/CMakeLists.txt
-      rm -f ../src/.clang-format
-
-      craftctl default    
-      
-      rpc=$(find . -name "libdiscord-rpc.so" -type f -print -quit)
-      
-      if [ -n "$rpc" ]; then
-          mkdir -p "$CRAFT_PART_INSTALL/usr/lib"
-          cp "$rpc" "$CRAFT_PART_INSTALL/usr/lib/"
-      else
-          echo "error: libdiscord-rpc.so not found"
-          exit 1
-      fi      
-  kart-app:
-    plugin: cmake
-    source: https://github.com/STJr/Kart-Public.git
-    override-pull: |
-      craftctl default
-      # add the left bit shift overflow patch
-      # for all arches (so it works on armhf and i386)
-      # since left bit shift has not been removed
-      # from source like in vanilla SRB2
-      # and PR no. #15 on the github repo
-      # fixes it and was tested
-      # and the patch will work fine on 64 bit systems anyway
-      craftctl default
-      patchfile=$(find . -name "bit-shift-overflow.patch" | head -n 1);
-      if [ -f "$patchfile" ]; then
-        echo "Applying bit shift overflow patch"
-        echo "This patch helps avoid 32-bit devices from crashing due to a bit shift calculation issue"
-        echo "So me (the builder) would call it a necessity"
-        echo "And will try and apply it"
-        patch -p1 < "$patchfile"
-      else
-        echo "Whoops! A patch not found at $patchfile, so proceeding without it."
-      fi
-    source-tag: v1.6
-    after: [kartassets, rapidjson, discord-rpc]
+    source: https://github.com/KartKrewDev/RingRacers.git
+    source-tag: v2.4
+    after: [ringracersassets]
     build-packages:
       - libsdl2-mixer-dev
       - libsdl2-dev
@@ -147,9 +82,16 @@ parts:
       - nasm
       - zlib1g-dev
       - build-essential
+      - libyuv
+    cmake-parameters:
+      - -DCMAKE_BUILD_TYPE=RelWithDebInfo
+      - -DCMAKE_C_FLAGS=-g1 -O3
+      - -DCMAKE_CXX_FLAGS=-g1 -O3 -fpermissive
+      - -DSRB2_CONFIG_DEV_BUILD=OFF
+      - -DSRB2_SDL2_EXE_NAME=ringracers
     override-build: |
       # find assets
-      asset_base=$(find $SNAPCRAFT_STAGE -name "srb2.srb" -printf '%h' -quit)
+      asset_base=$(find $SNAPCRAFT_STAGE -name "bios.pk3" -printf '%h' -quit)
 
       if [ -n "$asset_base" ]; then
           # define target (relative to src root here)
@@ -158,12 +100,14 @@ parts:
           mkdir -p "$target_dir"
           
           # cp assets
-          cp "$asset_base/srb2.srb" "$target_dir/"
-          cp "$asset_base"/*.kart "$target_dir/"
+          cp "$asset_base/PASSWORDS.txt" "$target_dir/"
+          cp "$asset_base"/bios.pk3 "$target_dir/"
           cp "$asset_base"/*.dat "$target_dir/"
+          cp "$asset_base"/gamecontrollerdb.txt "$target_dir/"
           
-          # cp mdls as well
-          cp -r "$asset_base/mdls" "$target_dir/"
+          # cp data and models as well
+          cp -r "$asset_base/data" "$target_dir/"
+          cp -r "$asset_base/models" "$target_dir/"
           
           echo "assets copied to $target_dir"
       else
@@ -175,20 +119,20 @@ parts:
 
       # find binary
       # cuz i don't wanna look for it right now
-      kart=$(find . -name "srb2kart" -type f -executable -print -quit)
+      kart=$(find . -name "ringracers" -type f -executable -print -quit)
 
       # check if the binary exists and then move it
       # to satisfy the packer when its doing its job
       if [ -n "$kart" ]; then
           echo "found binary at $kart, moving to install destination"
-          mkdir -p "$CRAFT_PART_INSTALL/usr/games/SRB2Kart"
-          cp "$kart" "$CRAFT_PART_INSTALL/usr/games/SRB2Kart/srb2kart"
+          mkdir -p "$CRAFT_PART_INSTALL/usr/games/RingRacers"
+          cp "$kart" "$CRAFT_PART_INSTALL/usr/games/RingRacers/ringracers"
       else
-          echo "error: srb2kart binary not found after build"
+          echo "error: ringracers binary not found after build"
           exit 1
       fi
   dependencies:
-    after: [rapidjson, discord-rpc, kartassets]
+    after: [ringracersassets]
     plugin: nil
     stage-packages:
       - libsdl2-2.0-0
@@ -202,11 +146,10 @@ parts:
       - libopusfile0
     prime:
       - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/*
-      - usr/lib/libdiscord-rpc.so*
 
   desktop-file:
     after: [dependencies]
     plugin: dump
     source: ./desktop-file
     prime:
-      - org.srb2.SRB2Kart.desktop
+      - org.kartkrew.RingRacers.desktop
