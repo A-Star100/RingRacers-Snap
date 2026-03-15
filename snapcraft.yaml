@@ -70,7 +70,7 @@ parts:
     source: https://salsa.debian.org/debian/libyuv.git
     source-commit: 8f0761d7b98aa402548983b2f823e5c1e81d687b
     cmake-parameters:
-      - -DCMAKE_BUILD_TYPE="Debug"
+      - -DCMAKE_INSTALL_PREFIX=/usr
   
   ringracers-app:
     plugin: cmake
@@ -83,7 +83,7 @@ parts:
       - libupnp-dev
       - libgme-dev
       - libopenmpt-dev
-      - libjpeg-dev
+      - libjpeg-turbo8-dev
       - libc6-dev
       - libpng-dev
       - libcurl4-openssl-dev
@@ -91,6 +91,8 @@ parts:
       - zlib1g-dev
       - build-essential
     cmake-parameters:
+      - -DYUV_INCLUDE_DIR=$SNAPCRAFT_STAGE/usr/include
+      - -DYUV_LIBRARY=$SNAPCRAFT_STAGE/usr/lib/libyuv.so
       - -DCMAKE_BUILD_TYPE=RelWithDebInfo
       - -DSRB2_CONFIG_DEV_BUILD=OFF
       - -DSRB2_SDL2_EXE_NAME=ringracers
