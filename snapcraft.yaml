@@ -1,0 +1,212 @@
+name: srb2kart
+base: core24
+version: '1.6'
+platforms:
+  amd64:
+  arm64:
+  armhf:
+summary: Kart racing mod based on the 3D Sonic fangame Sonic Robo Blast 2
+description: |
+  Sonic Robo Blast 2 Kart (usually shortened to SRB2Kart or SRB2K) is a kart racing game with Sonic-themed characters, items and race tracks. 
+  SRB2Kart features over 100 maps for two game modes: the main Race mode and a Battle mode where players fight each other using the items available in the game.
+grade: stable
+confinement: strict
+icon: srb2kart.png
+
+apps:
+  srb2kart:
+    command: usr/games/SRB2Kart/srb2kart
+    desktop: org.srb2.SRB2Kart.desktop
+    common-id: org.srb2.SRB2Kart
+    environment:
+      HOME: $SNAP_USER_COMMON
+      SRB2WADDIR: $SNAP/usr/games/SRB2Kart
+      LD_LIBRARY_PATH: $SNAP/usr/lib:$SNAP/usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR:$LD_LIBRARY_PATH
+    extensions: [gnome]
+    plugs:
+      - unity7
+      - screen-inhibit-control
+      - audio-playback
+      - network
+      - network-bind
+      - home
+      - removable-media
+      - mount-observe
+      - joystick
+      - bluez
+
+plugs:
+  shared-memory:
+    private: true
+
+parts:
+  kartassets:
+    plugin: dump
+    source: https://github.com/STJr/Kart-Public/releases/download/v1.6/AssetsLinuxOnly.zip
+    organize:
+      mdls: usr/games/SRB2Kart/mdls
+      chars.kart: usr/games/SRB2Kart/chars.kart
+      mdls.dat: usr/games/SRB2Kart/mdls.dat
+      music.kart: usr/games/SRB2Kart/music.kart
+      srb2.srb: usr/games/SRB2Kart/srb2.srb
+      maps.kart: usr/games/SRB2Kart/maps.kart
+      bonuschars.kart: usr/games/SRB2Kart/bonuschars.kart
+      gfx.kart: usr/games/SRB2Kart/gfx.kart
+      textures.kart: usr/games/SRB2Kart/textures.kart
+      sounds.kart: usr/games/SRB2Kart/sounds.kart
+    prime:
+      - usr/games/SRB2Kart
+
+  rapidjson:
+    plugin: cmake
+    source: https://github.com/Tencent/rapidjson/archive/24b5e7a8b27f42fa16b96fc70aade9106cf7102f.tar.gz
+    source-checksum: sha256/2d2601a82d2d3b7e143a3c8d43ef616671391034bc46891a9816b79cf2d3e7a8
+    cmake-generator: Ninja
+    cmake-parameters:
+      - -DRAPIDJSON_BUILD_DOC=OFF
+      - -DRAPIDJSON_BUILD_EXAMPLES=OFF
+      - -DRAPIDJSON_BUILD_TESTS=OFF
+      - -DRAPIDJSON_BUILD_THIRDPARTY_GTEST=OFF
+      - -DCMAKE_INSTALL_LIBDIR=lib
+    build-environment:
+      - CMAKE_POLICY_VERSION_MINIMUM: "3.5"
+    override-build: |
+      sed -i '1i cmake_policy(SET CMP0048 NEW)' ../src/CMakeLists.txt
+      sed -i '1i set(CMAKE_POLICY_VERSION_MINIMUM 3.5)' ../src/CMakeLists.txt
+    prime:
+      - -usr/include
+      - -usr/lib/cmake
+
+  discord-rpc:
+    plugin: cmake
+    source: https://github.com/discord/discord-rpc.git
+    source-tag: v3.4.0
+    cmake-generator: Ninja
+    cmake-parameters:
+      - -DBUILD_SHARED_LIBS=ON
+      - -DBUILD_EXAMPLES=OFF
+      - -DCMAKE_INSTALL_LIBDIR=lib
+      - -DCLANG_FORMAT_EXECUTABLE=/bin/true
+    build-environment:
+      - CFLAGS: "-O3 -Wno-error"
+      - CXXFLAGS: "-O3 -Wno-error"
+      - CMAKE_POLICY_VERSION_MINIMUM: "3.5"
+    # the below really should not be needed
+    # but discord-rpc is EOL and maintaining a fork
+    # would be sort of unreasonable when we can just use this
+    override-build: |
+      sed -i '1i cmake_policy(SET CMP0048 NEW)' ../src/CMakeLists.txt
+      sed -i '1i set(CMAKE_POLICY_VERSION_MINIMUM 3.5)' ../src/CMakeLists.txt
+      rm -f ../src/.clang-format
+
+      craftctl default    
+      
+      rpc=$(find . -name "libdiscord-rpc.so" -type f -print -quit)
+      
+      if [ -n "$rpc" ]; then
+          mkdir -p "$CRAFT_PART_INSTALL/usr/lib"
+          cp "$rpc" "$CRAFT_PART_INSTALL/usr/lib/"
+      else
+          echo "error: libdiscord-rpc.so not found"
+          exit 1
+      fi      
+  kart-app:
+    plugin: cmake
+    source: https://github.com/STJr/Kart-Public.git
+    override-pull: |
+      craftctl default
+      # add the left bit shift overflow patch
+      # for all arches (so it works on armhf and i386)
+      # since left bit shift has not been removed
+      # from source like in vanilla SRB2
+      # and PR no. #15 on the github repo
+      # fixes it and was tested
+      # and the patch will work fine on 64 bit systems anyway
+      craftctl default
+      patchfile=$(find . -name "bit-shift-overflow.patch" | head -n 1);
+      if [ -f "$patchfile" ]; then
+        echo "Applying bit shift overflow patch"
+        echo "This patch helps avoid 32-bit devices from crashing due to a bit shift calculation issue"
+        echo "So me (the builder) would call it a necessity"
+        echo "And will try and apply it"
+        patch -p1 < "$patchfile"
+      else
+        echo "Whoops! A patch not found at $patchfile, so proceeding without it."
+      fi
+    source-tag: v1.6
+    after: [kartassets, rapidjson, discord-rpc]
+    build-packages:
+      - libsdl2-mixer-dev
+      - libsdl2-dev
+      - libupnp-dev
+      - libgme-dev
+      - libopenmpt-dev
+      - libc6-dev
+      - libpng-dev
+      - libcurl4-openssl-dev
+      - nasm
+      - zlib1g-dev
+      - build-essential
+    override-build: |
+      # find assets
+      asset_base=$(find $SNAPCRAFT_STAGE -name "srb2.srb" -printf '%h' -quit)
+
+      if [ -n "$asset_base" ]; then
+          # define target (relative to src root here)
+          # snapcraft uses build for its cmake plugins
+          target_dir="../src/assets/installer"
+          mkdir -p "$target_dir"
+          
+          # cp assets
+          cp "$asset_base/srb2.srb" "$target_dir/"
+          cp "$asset_base"/*.kart "$target_dir/"
+          cp "$asset_base"/*.dat "$target_dir/"
+          
+          # cp mdls as well
+          cp -r "$asset_base/mdls" "$target_dir/"
+          
+          echo "assets copied to $target_dir"
+      else
+          echo "error: could not find needed assets"
+          exit 1
+      fi
+
+      craftctl default
+
+      # find binary
+      # cuz i don't wanna look for it right now
+      kart=$(find . -name "srb2kart" -type f -executable -print -quit)
+
+      # check if the binary exists and then move it
+      # to satisfy the packer when its doing its job
+      if [ -n "$kart" ]; then
+          echo "found binary at $kart, moving to install destination"
+          mkdir -p "$CRAFT_PART_INSTALL/usr/games/SRB2Kart"
+          cp "$kart" "$CRAFT_PART_INSTALL/usr/games/SRB2Kart/srb2kart"
+      else
+          echo "error: srb2kart binary not found after build"
+          exit 1
+      fi
+  dependencies:
+    after: [rapidjson, discord-rpc, kartassets]
+    plugin: nil
+    stage-packages:
+      - libsdl2-2.0-0
+      - libsdl2-mixer-2.0-0
+      - libsamplerate0
+      - libdecor-0-0
+      - libfluidsynth3
+      - libinstpatch-1.0-2
+      - libjack0
+      - libmodplug1
+      - libopusfile0
+    prime:
+      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/*
+      - usr/lib/libdiscord-rpc.so*
+
+  desktop-file:
+    after: [dependencies]
+    plugin: dump
+    source: ./desktop-file
+    prime:
+      - org.srb2.SRB2Kart.desktop
