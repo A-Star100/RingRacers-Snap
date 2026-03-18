@@ -36,6 +36,9 @@ apps:
       LD_LIBRARY_PATH: $SNAP/usr/lib:$SNAP/usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR:$LD_LIBRARY_PATH
     extensions: [gnome]
     plugs:
+      - x11
+      - wayland
+      - opengl
       - unity7
       - screen-inhibit-control
       - audio-playback
