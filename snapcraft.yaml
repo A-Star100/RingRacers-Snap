@@ -8,7 +8,7 @@ summary: Racing at the Next Level
 description: |
   Hang up your sneakers, because Dr. Robotnik and his ex-enemies are going go-karting! Use the untapped potential of rings to super-charge your vehicle across more than 200 crazy courses. With over 20 unique items and some of the hottest moves on this side of the Floating Island, this is Racing at the Next Level!
 
-  Ring Racers is packed to the brim with features, building off the success of its predecessor RingRacers, including:
+  Ring Racers is packed to the brim with features, building off the success of its predecessor SRB2Kart, including:
   
   - A ludicrously long list of courses and playable characters
   - A complete Grand Prix mode with CPU opponents and multiple difficulty levels
@@ -131,6 +131,8 @@ parts:
       # find binary
       # cuz i don't wanna look for it right now
       kart=$(find . -name "ringracers" -type f -executable -print -quit)
+      # its normally in ./bin/ringracers
+      # but maybe upstream build sys could change one day
 
       # check if the binary exists and then move it
       # to satisfy the packer when its doing its job
