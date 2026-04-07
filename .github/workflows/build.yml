@@ -20,19 +20,25 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Install snapcraft cli
+      - name: Install snapcraft
         run: |
           sudo snap install snapcraft --classic
 
       - name: Build snap
         run: |
           sudo snapcraft pack --destructive-mode
-        env:
-          SNAPCRAFT_BUILD_ENVIRONMENT: host
-          USE_SYSTEM_FPM: true
+        # env:
+        #   SNAPCRAFT_BUILD_ENVIRONMENT: host
+        #   USE_SYSTEM_FPM: true
 
       - name: Upload snap
         uses: actions/upload-artifact@v6
         with:
           name: ringracers-${{ matrix.architecture }}
           path: "*.snap"
+
+      - name: Publish snap
+        env:
+          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.STORE_LOGIN }}
+        run: |
+          snapcraft upload $SNAP_PATH --release edge
